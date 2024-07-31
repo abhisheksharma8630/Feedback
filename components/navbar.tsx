@@ -21,8 +21,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Loader } from "lucide-react";
 export default function Navbar({ active }: { active: boolean }) {
   return (
-    <div className="flex justify-between items-center pt-8 px-2">
-      <h1 className="text-lg font-bold">Feedback</h1>
+    <div className="flex justify-between items-center py-8 px-4">
+      <h1 className="text-2xl font-bold">Feedback</h1>
       {active && (
         <div className="flex gap-5">
           <DropdownMenu>
