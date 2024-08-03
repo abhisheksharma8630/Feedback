@@ -43,7 +43,7 @@ export default function page() {
         <div className="flex justify-between items-center my-3 px-3">
           <div className="flex space-x-4 items-center h-28">
             <Image
-              src="https://res.cloudinary.com/colbycloud-next-cloudinary/image/upload/v1722356423/CldUploadWidget-signed/ts242boppl7xz46d63o0.jpg"
+              src="/hulk.jpeg"
               alt="logo"
               width={150}
               height={150}

@@ -24,56 +24,79 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 import { PenIcon, Plus, Videotape } from "lucide-react";
+import { ChangeEvent, useState } from "react";
+import axios from "axios";
+import { spaceSchema } from "@/schemas/spaceSchema";
 
-const formSchema = z.object({
-  spaceName: z
-    .string()
-    .min(2, { message: "Space Name must be at least 2 characters" }),
-  logo: z.string().optional(),
-  isSquare: z.boolean(),
-  headerTitle: z
-    .string()
-    .min(2, { message: "Header Title must be at least 2 characters" }),
-  customMessage: z
-    .string()
-    .min(2, { message: "Custom Message must be at least 2 characters" }),
-  question: z
-    .string()
-    .array()
-    .min(2, { message: "Question must be at least 2 questions" }),
-  extraInfo: z.string().array().optional(),
-  isStars: z.boolean().default(true).optional(),
-  collectionType: z.string().optional(),
-  language: z.string().optional(),
-});
+// const formSchema = z.object({
+//   spaceName: z
+//     .string()
+//     .min(2, { message: "Space Name must be at least 2 characters" }),
+//   logo: z.string().optional(),
+//   imageUrl:z.string(),
+//   isSquare: z.boolean(),
+//   headerTitle: z
+//     .string()
+//     .min(2, { message: "Header Title must be at least 2 characters" }),
+//   customMessage: z
+//     .string()
+//     .min(2, { message: "Custom Message must be at least 2 characters" }),
+//   question: z
+//     .string()
+//     .array()
+//     .min(2, { message: "Question must be at least 2 questions" }),
+//   isStars: z.boolean().default(true).optional(),
+//   collectionType: z.string().optional(),
+//   language: z.string().optional(),
+// });
 export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [imgFile,setImgFile] = useState<File | null>(null);
+  const [imgUrl,setImgUrl] = useState('/hulk.jpeg');
+  const form = useForm<z.infer<typeof spaceSchema>>({
+    resolver: zodResolver(spaceSchema),
     defaultValues: {
       spaceName: "Website Name",
       headerTitle: "Feedback Form",
-      logo:"",
+      imageUrl:"/hulk.jpeg",
       isSquare:true,
       customMessage: "Share your thoughts and suggestions",
       question: [
         "What was your favorite color?",
         "What do you enjoy doing in your free time?",
       ],
-      extraInfo: [],
       language: "english",
       isStars: true,
       collectionType: "textAndVideo",
     },
   });
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof spaceSchema>) => {
+    if(!imgFile) return;
+    const formData = new FormData();
+    formData.append('image',imgFile);
+    try {
+      const response = await axios.post("/api/cloudinary-upload",formData);
+      form.setValue("imageUrl",response.data.image);
+      const response2 = await axios.post('/api/space',values);
+      
+    } catch (error:any) {
+      console.log('error',error.message);
+    }
   };
+  const onChangeHandler = async (e:ChangeEvent<HTMLInputElement>)=>{
+    const file = e.target.files?.[0] || null;
+    if(file){
+      setImgFile(file);
+      const currUrl = URL.createObjectURL(file);
+      setImgUrl(currUrl);
+    }
+    
+  }
   return (
     <main className="h-full flex justify-around min-w-max bg-slate-200 py-8 px-44 text-black">
       <div className="flex bg-white rounded-sm py-8 px-5 min-w-full">
-        <div className="bg-white border-slate-100 mr-5 border-2 h-fit rounded-lg p-10 flex flex-col justify-center items-center shadow-xl">
+        <div className="w-[40%] bg-white border-slate-100 mr-5 border-2 h-fit rounded-lg p-10 flex flex-col justify-center items-center shadow-xl">
           <Image
-            src="/hulk.jpeg"
+            src={imgUrl}
             alt="logo"
             width={150}
             height={150}
@@ -145,7 +168,7 @@ export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
               />
               <FormField
                 control={form.control}
-                name="logo"
+                name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Choose a Logo</FormLabel>
@@ -153,7 +176,7 @@ export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
                       <Input
                         placeholder="upload logo for your space"
                         type="file"
-                        {...field}
+                        onChange={onChangeHandler}
                       />
                     </FormControl>
                     <FormMessage />
