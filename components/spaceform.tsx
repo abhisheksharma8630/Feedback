@@ -27,35 +27,20 @@ import { PenIcon, Plus, Videotape } from "lucide-react";
 import { ChangeEvent, useState } from "react";
 import axios from "axios";
 import { spaceSchema } from "@/schemas/spaceSchema";
+import { useToast } from "@/components/ui/use-toast";
+import { revalidatePath } from "next/cache";
+import Link from "next/link";
 
-// const formSchema = z.object({
-//   spaceName: z
-//     .string()
-//     .min(2, { message: "Space Name must be at least 2 characters" }),
-//   logo: z.string().optional(),
-//   imageUrl:z.string(),
-//   isSquare: z.boolean(),
-//   headerTitle: z
-//     .string()
-//     .min(2, { message: "Header Title must be at least 2 characters" }),
-//   customMessage: z
-//     .string()
-//     .min(2, { message: "Custom Message must be at least 2 characters" }),
-//   question: z
-//     .string()
-//     .array()
-//     .min(2, { message: "Question must be at least 2 questions" }),
-//   isStars: z.boolean().default(true).optional(),
-//   collectionType: z.string().optional(),
-//   language: z.string().optional(),
-// });
+
 export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
   const [imgFile,setImgFile] = useState<File | null>(null);
   const [imgUrl,setImgUrl] = useState('/hulk.jpeg');
+  const {toast} = useToast();
   const form = useForm<z.infer<typeof spaceSchema>>({
     resolver: zodResolver(spaceSchema),
     defaultValues: {
       spaceName: "Website Name",
+      spaceUrl:"website-name",
       headerTitle: "Feedback Form",
       imageUrl:"/hulk.jpeg",
       isSquare:true,
@@ -75,11 +60,19 @@ export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
     formData.append('image',imgFile);
     try {
       const response = await axios.post("/api/cloudinary-upload",formData);
-      form.setValue("imageUrl",response.data.image);
+      values.imageUrl = response.data.image;
       const response2 = await axios.post('/api/space',values);
-      
+      if(response2.status === 200){
+        form.reset();
+        setImgFile(null);
+        setImgUrl('/hulk.jpeg');
+        revalidatePath('/dashboard');
+        setIsSpaceForm(false);
+        toast({title:"Successfully Saved Space"})
+      }
     } catch (error:any) {
       console.log('error',error.message);
+      toast({variant:"destructive",title:"Problem Occured while saving Space"})
     }
   };
   const onChangeHandler = async (e:ChangeEvent<HTMLInputElement>)=>{
@@ -94,7 +87,7 @@ export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
   return (
     <main className="h-full flex justify-around min-w-max bg-slate-200 py-8 px-44 text-black">
       <div className="flex bg-white rounded-sm py-8 px-5 min-w-full">
-        <div className="w-[40%] bg-white border-slate-100 mr-5 border-2 h-fit rounded-lg p-10 flex flex-col justify-center items-center shadow-xl">
+        <div className="w-[450px] bg-white border-slate-100 mr-5 border-2 h-fit rounded-lg p-10 flex flex-col justify-center items-center shadow-xl">
           <Image
             src={imgUrl}
             alt="logo"
@@ -139,10 +132,12 @@ export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input placeholder="write your website name" {...field} />
+                      <Input placeholder="write your website name" onChange={(e)=>{field.onChange(e.target.value);
+                        form.setValue("spaceUrl",e.target.value?.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-'));
+                      }}/>
                     </FormControl>
                     <FormDescription className="text-xs ml-2">
-                      Public Url is: feedback.to/{field.value}
+                      Public Url is: feedback.to/{form.watch('spaceUrl')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -285,4 +280,13 @@ export default function SpaceForm({setIsSpaceForm}:{setIsSpaceForm:Function}) {
       </div>
     </main>
   );
+}
+
+export const SpaceElement = ({imageUrl,spaceName,spaceUrl}:{imageUrl:string,spaceName:string,spaceUrl:string})=>{
+  return (<Link href={"/"+spaceUrl}>
+  <div className="flex items-center w-[200px] justify-start gap-5 bg-gray-700 hover:bg-gray-600 rounded-md cursor-pointer">
+    <img src={imageUrl} className="h-20 w-20 rounded-tl-md rounded-bl-md object-cover"/>
+    <p>{spaceName}</p>
+  </div>
+  </Link>)
 }

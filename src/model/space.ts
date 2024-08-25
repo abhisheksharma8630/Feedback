@@ -8,6 +8,11 @@ const spaceSchema = new Schema({
         minlength: 2,
         maxlength: 100
     },
+    spaceUrl:{
+        type:String,
+        required:true,
+        unique:true
+    },
     headerTitle: {
         type: String,
         required: true,

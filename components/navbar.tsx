@@ -1,14 +1,6 @@
 import React from "react";
 import NavbarItem from "./navbarItem";
 import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-  ClerkLoading,
-  ClerkLoaded,
-} from "@clerk/nextjs";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -43,19 +35,6 @@ export default function Navbar({ active }: { active: boolean }) {
           <NavbarItem label="Pricing" />
         </div>
       )}
-      <ClerkLoading>
-        <Loader className="h-5 w-5 animate-spin" />
-      </ClerkLoading>
-      <ClerkLoaded>
-        <SignedOut>
-          <Button color="primary" size={"sm"}>
-            <SignInButton />
-          </Button>
-        </SignedOut>
-        <SignedIn >
-          <UserButton />
-        </SignedIn>
-      </ClerkLoaded>
     </div>
   );
 }

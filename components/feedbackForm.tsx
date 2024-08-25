@@ -48,7 +48,7 @@ export default function FeedbackForm() {
   };
   return (
     <div>
-      <div className="space-y-2 m-5">
+      <div className="space-y-2 m-5 text-black">
         <Image
           alt="feedback-form-image"
           src="/hulk.jpeg"
