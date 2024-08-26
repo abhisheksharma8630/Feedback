@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import AuthProvider from "./authProvider";
 import "./globals.css";
 
@@ -17,16 +17,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="en">
-        <AuthProvider>
+    <html lang="en">
+      <AuthProvider>
         <body
           className={inter.className}
           // style={{ backgroundColor: "", color: "white" }}
-          >
+        >
           {children}
-          <Toaster/>
+          <Toaster />
         </body>
-            </AuthProvider>
-      </html>
+      </AuthProvider>
+    </html>
   );
 }
